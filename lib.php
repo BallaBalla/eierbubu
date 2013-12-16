@@ -1,8 +1,8 @@
 <?php	          	 
           	 	          	 
 	//LOGIN -------------------------------------------------------------------------
-	function login($usrname, $password_crypt, $welt) {
-		global $ch; //variable auch ausserhalb der funktion verfuegbar machen
+	function login($usrname, $password_crypt) {
+		global $ch, $welt, $pre_url; //variable auch ausserhalb der funktion verfuegbar machen
 		
 		$ch = curl_init(); //curl session eroeffnen
 	                		
@@ -24,8 +24,8 @@
 	}
 	//GET DorfNr.-------------------------------------------------------------------
 	function getdnr(){
-		global $ch, $welt, $debug;
-		if($debug==2){echo "DEBUG: getdnr: Start Function getdnr.\n";}
+		global $ch, $pre_url, $debug;
+		if($debug==2){echo "DEBUG: getdnr: Start Function getdnr with the global Variables [PREURL:$pre_url, DEBUG:$debug].\n";}
 		
 		// Check $ch is Ok_
 		if($debug >= 1 && !$ch){echo "ERROR: getdnr: [\$ch is NOT set.]\n";}
@@ -33,9 +33,8 @@
 		
 
 		// Willkommenseite aufrufen:
-		curl_setopt($ch, CURLOPT_URL, "http://de$welt.die-staemme.de/game.php?screen=welcome&intro&oscreen=overview");
+		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?screen=welcome&intro&oscreen=overview");
 		curl_setopt($ch, CURLOPT_POST, FALSE);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		//DorfNummer ausschneiden:
 		$output = curl_exec($ch);
 		$temp=explode(',"village":{"id":', $output);
@@ -54,20 +53,43 @@
 	}
 	                
 	//DOWNLOAD REPORT --------------------------------------------------------------
-	function report($welt, $dorfnr) {
+	function report($pre_url, $dorfnr) {
 		global $ch;
 		
-		curl_setopt($ch, CURLOPT_URL, "http://de$welt.die-staemme.de/game.php?village=$dorfnr&mode=attack&screen=report");
+		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?village=$dorfnr&mode=attack&screen=report");
 		curl_setopt($ch, CURLOPT_POST, FALSE);
 		curl_setopt($ch, CURLOPT_COOKIEFILE, '/tmp/staco.txt');
 		curl_setopt($ch, CURLOPT_COOKIEJAR, '/tmp/staco.txt');
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$output = curl_exec($ch);
-		
-		curl_close($ch); //curl session beenden ::: temporaer in dieser funktion. spaeter in logout funktion!!!
-		
+
 		return $output;                
-	}
+	} 	
+	//Logout --------------------------------------------------------------
+	function logout($dorfnr) {
+		global $ch, $pre_url, $cookie_file, $debug;
+
+		// Check $ch is Ok
+		if($debug==2){echo "DEBUG: logout: Start Function logout with Parameter [DorfNumber:$dorfnr] and the global Variables [PREURL:$pre_url, COOKIEFILE:$cookie_file, DEBUG:$debug].\n";}
+		if($debug >= 1 && !$ch){echo "ERROR: logout: [\$ch is NOT set.]\n";}
+		if($debug == 2 &&  $ch){echo "DEBUG: logout: \$ch is set.\n";}
+		//Logout from Staemme
+		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?village=$dorfnr&action=logout");
+		$output = curl_exec($ch);
+
+		//Debug
+		if(preg_match("/Du hast dich erfolgreich ausgeloggt/i", $output)){
+			if($debug == 2){echo "DEBUG: logout: Logout is OK.\n";}
+		}else{
+			if($debug >= 1){echo "ERROR: logout: Logout FAILS.\n";}
+		}
+
+		//Close Curl Session
+		curl_close($ch); 
+
+		//Remove Cookie
+		unlink($cookie_file);  
+		if($debug==2){echo "DEBUG: logout: End of Function logout.\n";}          
+	} 
 	
 	//SEARCH ATTACK REPORTS -------------------------------------------------------
 	function getattackreports($reportout) {

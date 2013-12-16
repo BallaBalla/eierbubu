@@ -1,11 +1,21 @@
-Funktionen Handbuch zr lib.php von eierbubu
+Funktionen Handbuch zur lib.php von eierbubu
 ===========================================
 
+=================================================================================================================================================
 Funktion getdnr():
-
+_________________________________________________________________________________________________________________________________________________
 Beschreibung:	Gibt die Dorfnummer aus des aktuell angewählten Dorf. 
 		(Das Dorf das beim aufruf von "http://de[WELTNR].die-staemme.de/game.php?screen=welcome&intro&oscreen=overview" ausgewählt ist.)
 Aufruf: 	int getdnr();
 Parameter: 	keine
-Must Have:	Die variablen $ch, $welt und $debug müssen definiert sein.
+Must Have:	Die variablen $ch, $pre_url und $debug müssen definiert sein.
 Rückgabe:	Die Dorfnummer.
+
+=================================================================================================================================================
+Funktion logout():
+_________________________________________________________________________________________________________________________________________________
+Beschreibung:	Logt aus, löscht die Cookies und beendet die Curl Session, sollte immer ausgeführt werden zum abschluss eines Scripts. 
+Aufruf: 	logout(DorfNumber);
+Parameter: 	DorfNumber, Typical saved in Variable $dorfnr. use getdnr() to get the DorfNumber.
+Must Have:	Die variablen $ch, $pre_url, $cookie_file und $debug müssen definiert sein.
+Rückgabe:	Keine

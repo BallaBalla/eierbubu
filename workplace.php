@@ -5,10 +5,10 @@
 
 
 	//WorkZone		                
-	$wuschi=login($usrname, $password_crypt, $welt);
+	$wuschi=login($usrname, $password_crypt);
 	$dorfnr=getdnr();
 	$reportout=report($welt, $dorfnr);
 	$attacks=getattackreports($reportout);
-	
+	logout($dorfnr);
 	//echo $attacks[1]."\n";
 ?>
