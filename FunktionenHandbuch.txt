@@ -1,0 +1,11 @@
+Funktionen Handbuch zr lib.php von eierbubu
+===========================================
+
+Funktion getdnr():
+
+Beschreibung:	Gibt die Dorfnummer aus des aktuell angewählten Dorf. 
+		(Das Dorf das beim aufruf von "http://de[WELTNR].die-staemme.de/game.php?screen=welcome&intro&oscreen=overview" ausgewählt ist.)
+Aufruf: 	int getdnr();
+Parameter: 	keine
+Must Have:	Die variablen $ch, $welt und $debug müssen definiert sein.
+Rückgabe:	Die Dorfnummer.
