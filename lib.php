@@ -1,36 +1,96 @@
-<?php	          	 
+<?php	     
+	//Debug -------------------------------------------------------------------------
+	function debug($REPORTLEVEL, $MESSAGE) {
+		global $debug, $html_output, $output_to_file, $output_file_path; 
+		// Output in HTML?
+		if($html_output==1){
+			$end="<br>";
+		}else{
+			$end="";
+		}
+		//Output
+		if($output_to_file==1){
+			$handle = fopen("$output_file_path", "a");
+			if($REPORTLEVEL==1 && $debug>=1){
+				fwrite($handle, "ERROR: ".$MESSAGE." ".$end."\n");
+			}
+			if($REPORTLEVEL==2 && $debug==2){
+				fwrite($handle, "DEBUG: ".$MESSAGE." ".$end."\n");
+			}
+			fclose($handle);
+		}else{
+			if($REPORTLEVEL==1 && $debug>=1){
+				echo "ERROR: ".$MESSAGE." ".$end."\n";
+			}
+			if($REPORTLEVEL==2 && $debug==2){
+				echo "DEBUG: ".$MESSAGE." ".$end."\n";
+			}
+		}
+	}
+	function err($MESSAGE){
+		debug(1, $MESSAGE);
+	}	
+	function inf($MESSAGE){
+		debug(2, $MESSAGE);
+	}     	 
           	 	          	 
 	//LOGIN -------------------------------------------------------------------------
 	function login($usrname, $password_crypt) {
-		global $ch, $welt, $pre_url; //variable auch ausserhalb der funktion verfuegbar machen
+		global $ch, $welt, $pre_url, $cookie_file; //variable auch ausserhalb der funktion verfuegbar machen
 		
 		$ch = curl_init(); //curl session eroeffnen
 	                		
 	    curl_setopt($ch, CURLOPT_URL, "http://www.die-staemme.de/index.php");
 	    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
 	    curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-	    curl_setopt($ch, CURLOPT_COOKIEJAR, '/tmp/staco.txt');
+	    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 	    $output = curl_exec($ch);
 
 	    curl_setopt($ch, CURLOPT_URL, "http://www.die-staemme.de/index.php?action=login&server_de$welt");
 	    curl_setopt($ch, CURLOPT_POST, TRUE);
 	    curl_setopt($ch, CURLOPT_POSTFIELDS, "user=$usrname&password=$password_crypt");
-	    curl_setopt($ch, CURLOPT_COOKIEFILE, '/tmp/staco.txt');
-	    curl_setopt($ch, CURLOPT_COOKIEJAR, '/tmp/staco.txt');
+	    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
+	    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
 	    $output = curl_exec($ch);
 
 	    //return $output;
 	}
+	//Logout --------------------------------------------------------------
+	function logout($dorfnr) {
+		global $ch, $pre_url, $cookie_file;
+
+		// Check $ch is Ok
+		debug(2, "logout: Start Function logout with Parameter [DorfNumber:$dorfnr] and the global Variables [PREURL:$pre_url, COOKIEFILE:$cookie_file].");
+		if(!$ch){debug(1,"logout: [\$ch is NOT set.]");}
+		if( $ch){debug(2,"logout: \$ch is set.");}
+
+		//Logout from Staemme
+		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?village=$dorfnr&action=logout");
+		$output = curl_exec($ch);
+
+		//Debug
+		if(preg_match("/Du hast dich erfolgreich ausgeloggt/i", $output)){
+			debug(2, "logout: Logout is OK.");
+		}else{
+			debug(1, "logout: Logout FAILS.");
+		}
+
+		//Close Curl Session
+		curl_close($ch); 
+
+		//Remove Cookie
+		unlink($cookie_file);  
+		debug(2, "logout: End of Function logout.");         
+	} 
 	//GET DorfNr.-------------------------------------------------------------------
 	function getdnr(){
-		global $ch, $pre_url, $debug;
-		if($debug==2){echo "DEBUG: getdnr: Start Function getdnr with the global Variables [PREURL:$pre_url, DEBUG:$debug].\n";}
+		global $ch, $pre_url;
+		debug(2, "getdnr: Start Function getdnr with the global Variables [PREURL:$pre_url].");
 		
 		// Check $ch is Ok_
-		if($debug >= 1 && !$ch){echo "ERROR: getdnr: [\$ch is NOT set.]\n";}
-		if($debug == 2 &&  $ch){echo "DEBUG: getdnr: \$ch is set.\n";}
-		
+		if(!$ch){debug(1,"getdnr: [\$ch is NOT set.]");}
+		if( $ch){debug(2,"getdnr: \$ch is set.");}
 
 		// Willkommenseite aufrufen:
 		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?screen=welcome&intro&oscreen=overview");
@@ -41,55 +101,30 @@
 		$dnr_arr=explode(',"name":', $temp[1]);
 		//Check DorfNum:
 		if(preg_match("/\A[0-9]+\z/", $dnr_arr[0])){
-			if($debug == 2){echo "DEBUG: getdnr: DorfNr. are just a Number (That means it's OK).\n";}
+			debug(2, "getdnr: DorfNr. are just a Number (That means it's OK).");
 		}else{
-			if($debug >= 1){echo "ERROR: getdnr: DorfNr. is NOT a Number (That means it's NOT OK).\n";}
+			debug(1, "getdnr: DorfNr. is NOT a Number (That means it's NOT OK).");
 		}
 		//Debug Output
-		if($debug == 2){echo "DEBUG: getdnr: DorfNr.: [".$dnr_arr[0]."]\n";}
-		if($debug == 2){echo "DEBUG: getdnr: End of Function getdnr.\n";}
+		debug(2,"getdnr: DorfNr.: [".$dnr_arr[0]."]");
+		debug(2,"getdnr: End of Function getdnr.");
 		//Ausgabe der Dorfnummer:
 		return $dnr_arr[0];
 	}
 	                
 	//DOWNLOAD REPORT --------------------------------------------------------------
 	function report($pre_url, $dorfnr) {
-		global $ch;
+		global $ch, $cookie_file;
 		
 		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?village=$dorfnr&mode=attack&screen=report");
 		curl_setopt($ch, CURLOPT_POST, FALSE);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, '/tmp/staco.txt');
-		curl_setopt($ch, CURLOPT_COOKIEJAR, '/tmp/staco.txt');
+		curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
 		$output = curl_exec($ch);
 
 		return $output;                
 	} 	
-	//Logout --------------------------------------------------------------
-	function logout($dorfnr) {
-		global $ch, $pre_url, $cookie_file, $debug;
 
-		// Check $ch is Ok
-		if($debug==2){echo "DEBUG: logout: Start Function logout with Parameter [DorfNumber:$dorfnr] and the global Variables [PREURL:$pre_url, COOKIEFILE:$cookie_file, DEBUG:$debug].\n";}
-		if($debug >= 1 && !$ch){echo "ERROR: logout: [\$ch is NOT set.]\n";}
-		if($debug == 2 &&  $ch){echo "DEBUG: logout: \$ch is set.\n";}
-		//Logout from Staemme
-		curl_setopt($ch, CURLOPT_URL, "http://$pre_url.die-staemme.de/game.php?village=$dorfnr&action=logout");
-		$output = curl_exec($ch);
-
-		//Debug
-		if(preg_match("/Du hast dich erfolgreich ausgeloggt/i", $output)){
-			if($debug == 2){echo "DEBUG: logout: Logout is OK.\n";}
-		}else{
-			if($debug >= 1){echo "ERROR: logout: Logout FAILS.\n";}
-		}
-
-		//Close Curl Session
-		curl_close($ch); 
-
-		//Remove Cookie
-		unlink($cookie_file);  
-		if($debug==2){echo "DEBUG: logout: End of Function logout.\n";}          
-	} 
 	
 	//SEARCH ATTACK REPORTS -------------------------------------------------------
 	function getattackreports($reportout) {

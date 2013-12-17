@@ -2,8 +2,13 @@
 	// Konfigurations File für Eierbubu
 
 	//Script Konfiguration:
-	$debug=2;	//0=No Err, 1=Err, 2=Debug  Output
 	$cookie_file="/tmp/staco.txt";
+
+	//Debug Settings
+	$debug=2;		//0=No Err, 1=Err, 2=Debug  Output
+	$html_output=0;		//0=False, 1=True
+	$output_to_file=0;	//0=False, 1=True
+	$output_file_path="";	// Path to Output/log File when $output_to_file is True
 
 	// Staemme Login:
 	$usrname="bobofoetz123";

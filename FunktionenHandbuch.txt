@@ -8,7 +8,7 @@ Beschreibung:	Gibt die Dorfnummer aus des aktuell angewählten Dorf.
 		(Das Dorf das beim aufruf von "http://de[WELTNR].die-staemme.de/game.php?screen=welcome&intro&oscreen=overview" ausgewählt ist.)
 Aufruf: 	int getdnr();
 Parameter: 	keine
-Must Have:	Die variablen $ch, $pre_url und $debug müssen definiert sein.
+Must Have:	Die variablen $ch und $pre_url müssen definiert sein.
 Rückgabe:	Die Dorfnummer.
 
 =================================================================================================================================================
@@ -17,5 +17,37 @@ ________________________________________________________________________________
 Beschreibung:	Logt aus, löscht die Cookies und beendet die Curl Session, sollte immer ausgeführt werden zum abschluss eines Scripts. 
 Aufruf: 	logout(DorfNumber);
 Parameter: 	DorfNumber, Typical saved in Variable $dorfnr. use getdnr() to get the DorfNumber.
-Must Have:	Die variablen $ch, $pre_url, $cookie_file und $debug müssen definiert sein.
+Must Have:	Die variablen $ch, $pre_url und $cookie_file müssen definiert sein.
+Rückgabe:	Keine
+
+=================================================================================================================================================
+Funktion debug():
+_________________________________________________________________________________________________________________________________________________
+Beschreibung:	Giebt einen Outpuut je nach konfiguration aus oder schreibt in file. 
+Aufruf: 	debug(REPORTLEVEL, MESSAGE);
+Parameter: 	
+		REPORTLEVEL  	Das Level ab welchem die Nachricht ausgegeben werden soll. 1=Error, 2=Debug
+		MESSAGE		Die Nachricht welche der Debuger ausgeben soll
+Must Have:	Die variablen $debug, $html_output, $output_to_file und $output_file_path müssen definiert sein
+Rückgabe:	Keine
+
+Konfiguration:	$html_output:	ist diese option True, werden <br> an zeilenende gesetzt.
+		$debug:		Das level des debugers 0=Kein Output, 1=Fehler output, 2= Debug Output (so unnötig)
+		$output_to_file:Ist diese Option True, wird versucht den Output nicht auszugenen sondern in $output_file_path zu schreiben
+		$output_file_path: Sihe $output_to_file.
+=================================================================================================================================================
+Funktion err():
+_________________________________________________________________________________________________________________________________________________
+Beschreibung:	Giebt eine Nachricht mit dem REPORTLEVEL 1 an die funktion debug(). 
+Aufruf: 	err(MESSAGE);
+Parameter: 	MESSAGE		Die Nachricht welche der Debuger ausgeben soll
+Must Have:	Sihe debug()
+Rückgabe:	Keine
+=================================================================================================================================================
+Funktion inf():
+_________________________________________________________________________________________________________________________________________________
+Beschreibung:	Giebt eine Nachricht mit dem REPORTLEVEL 2 an die funktion debug(). 
+Aufruf: 	inf(MESSAGE);
+Parameter: 	MESSAGE		Die Nachricht welche der Debuger ausgeben soll
+Must Have:	Sihe debug()
 Rückgabe:	Keine
