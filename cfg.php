@@ -1,5 +1,6 @@
 <?php
 	// Konfigurations File für Eierbubu
+	//test kommentar zum github verstehen
 
 	//Script Konfiguration:
 	$cookie_file="/tmp/staco.txt";
