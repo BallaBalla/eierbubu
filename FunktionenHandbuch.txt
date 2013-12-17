@@ -2,7 +2,7 @@ Funktionen Handbuch zur lib.php von eierbubu
 gaggalari
 =================================================================================================================================================
 
-änderung aus Branch 4443
+Change vu 4443
 quaack by manu
 
 
